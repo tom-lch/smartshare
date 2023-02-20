@@ -56,8 +56,6 @@ class UsmsConfig:
             db_database = conf.get("server_database", "db_database")
             db_username = conf.get("server_database", "db_username")
             db_password = conf.get("server_database", "db_password")
-            org_name = conf.get("caas_agent", "org_name")
-            sys_name = conf.get("caas_agent", "sys_name")
 
         except Exception as e:
             print(e)

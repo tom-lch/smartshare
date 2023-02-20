@@ -9,5 +9,10 @@ base 存放项目启动必须的逻辑
 ## models
 深度学习模型引用路径
 ## utils
+
 utils 存放开发中封装的便利工具
 
+conda  install --yes --file requirements.txt
+
+pip install tushare=1.2.89
+pip install requests=2.23.2

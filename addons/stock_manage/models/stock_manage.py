@@ -4,7 +4,9 @@ from peewee import *
 from base.base_module import BaseModel
 
 
-class Stocks_Base(BaseModel):
+class StocksBase(BaseModel):
+    class Meta:
+        table_name = "stocks_base"
     id = AutoField()
     gen_time = DateTimeField(default=datetime.datetime.now())
     status = IntegerField(default=0)
@@ -22,8 +24,9 @@ class Stocks_Base(BaseModel):
     delist_date = CharField()
 
 
-class Stock_Daily(BaseModel):
-
+class StockDaily(BaseModel):
+    class Meta:
+        table_name = "stock_daily"
     id = AutoField()
     gen_time = DateTimeField(default=datetime.datetime.now())
     status = IntegerField(default=0)

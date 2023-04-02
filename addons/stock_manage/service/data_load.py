@@ -7,6 +7,20 @@ import talib
 
 max_min_scaler = lambda x: (x-np.min(x)) / (np.max(x) - np.min(x))
 
+class Stocks():
+    def __init__(self, markets: List[str] = ["科创板", "创业板", "主板", "中小板"]):
+        self.markets = markets
+        self.raws = self.query_stocks()
+    
+    def query_stocks(self):
+        res = (StocksBase.select(StocksBase.ts_code, StocksBase.name).
+               where(StocksBase.market << self.markets))
+        return res
+    
+    def get_stocks(self):
+        return [raw.ts_code for raw in self.raws]
+
+
 # 加载数据模块
 class DataLoader:
     def __init__(self, stock_code: str, start_date: datetime.date, end_date: datetime.date):
@@ -127,8 +141,8 @@ class DataLoader:
         slope21 = talib.LINEARREG_SLOPE(close_prices, timeperiod=21) * 20 + close_prices
         # 计算42日EMA
         df["ema42"] = talib.EMA(slope21, timeperiod=42)
-
         df["buy_signal"] = np.where(df["ema_2"] >= df["ema42"], 1, 0)
+        print( df["buy_signal"])
         df["sell_signal"] = np.where(df["ema_2"] < df["ema42"], 1, 0)
         df.fillna(0, inplace=True)
     

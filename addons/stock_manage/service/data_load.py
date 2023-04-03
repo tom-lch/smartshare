@@ -22,7 +22,7 @@ class Stocks():
 
 
 # 加载数据模块
-class DataLoader:
+class StockDataLoader:
     def __init__(self, stock_code: str, start_date: datetime.date, end_date: datetime.date):
         self.df = None
         self.stock_code = stock_code
@@ -39,8 +39,8 @@ class DataLoader:
                         StockDaily.pre_close, 
                         StockDaily.pct_chg,
                         StockDaily.change,
-                        StockDaily.vol, 
-                        StockDaily.amount).
+                        StockDaily.vol / 1000000, 
+                        StockDaily.amount / 10000000).
                where((StockDaily.ts_code == self.stock_code) & 
                      (StockDaily.trade_date.between(self.start_date, self.end_date))).
                      order_by(StockDaily.trade_date))
@@ -57,11 +57,11 @@ class DataLoader:
                         StockDailyBasic.pe_ttm,
                         StockDailyBasic.pb,
                         StockDailyBasic.ps,
-                        StockDailyBasic.total_share,
-                        StockDailyBasic.float_share,
-                        StockDailyBasic.free_share,
-                        StockDailyBasic.total_mv,
-                        StockDailyBasic.circ_mv
+                        # StockDailyBasic.total_share,
+                        # StockDailyBasic.float_share,
+                        # StockDailyBasic.free_share,
+                        # StockDailyBasic.total_mv,
+                        # StockDailyBasic.circ_mv
         ).
                where((StockDailyBasic.ts_code == self.stock_code) & 
                      (StockDailyBasic.trade_date.between(self.start_date, self.end_date))).order_by(StockDailyBasic.trade_date))
@@ -70,24 +70,24 @@ class DataLoader:
         res = (StockDailyMoneyFlow.select(
                         StockDailyMoneyFlow.ts_code,
                         StockDailyMoneyFlow.trade_date,
-                        StockDailyMoneyFlow.buy_sm_vol,
-                        StockDailyMoneyFlow.buy_sm_amount,
-                        StockDailyMoneyFlow.sell_sm_vol,
-                        StockDailyMoneyFlow.sell_sm_amount,
-                        StockDailyMoneyFlow.buy_md_vol,
-                        StockDailyMoneyFlow.buy_md_amount,
-                        StockDailyMoneyFlow.sell_md_vol,
-                        StockDailyMoneyFlow.sell_md_amount,
-                        StockDailyMoneyFlow.buy_lg_vol,
-                        StockDailyMoneyFlow.buy_lg_amount,
-                        StockDailyMoneyFlow.sell_lg_vol,
-                        StockDailyMoneyFlow.sell_lg_amount,
-                        StockDailyMoneyFlow.buy_elg_vol,
-                        StockDailyMoneyFlow.buy_elg_amount,
-                        StockDailyMoneyFlow.sell_elg_vol,
-                        StockDailyMoneyFlow.sell_elg_amount,
-                        StockDailyMoneyFlow.net_mf_vol,
-                        StockDailyMoneyFlow.net_mf_amount,
+                        StockDailyMoneyFlow.buy_sm_vol  / 10000000,
+                        StockDailyMoneyFlow.buy_sm_amount  / 10000000,
+                        StockDailyMoneyFlow.sell_sm_vol / 10000000,
+                        StockDailyMoneyFlow.sell_sm_amount / 10000000,
+                        StockDailyMoneyFlow.buy_md_vol / 10000000,
+                        StockDailyMoneyFlow.buy_md_amount / 10000000,
+                        StockDailyMoneyFlow.sell_md_vol / 10000000,
+                        StockDailyMoneyFlow.sell_md_amount / 10000000,
+                        StockDailyMoneyFlow.buy_lg_vol / 10000000,
+                        StockDailyMoneyFlow.buy_lg_amount / 10000000,
+                        StockDailyMoneyFlow.sell_lg_vol / 10000000,
+                        StockDailyMoneyFlow.sell_lg_amount / 10000000,
+                        StockDailyMoneyFlow.buy_elg_vol / 10000000,
+                        StockDailyMoneyFlow.buy_elg_amount / 10000000,
+                        StockDailyMoneyFlow.sell_elg_vol / 10000000,
+                        StockDailyMoneyFlow.sell_elg_amount / 10000000,
+                        StockDailyMoneyFlow.net_mf_vol / 10000000,
+                        StockDailyMoneyFlow.net_mf_amount / 10000000,
         ).
                where((StockDailyMoneyFlow.ts_code == self.stock_code) & 
                      (StockDailyMoneyFlow.trade_date.between(self.start_date, self.end_date))).order_by(StockDailyMoneyFlow.trade_date))
@@ -119,13 +119,13 @@ class DataLoader:
     def get_all_stock_data(self):
         df = self.stock_all_data()
         df = df.set_index('trade_date',drop=False, append=False, inplace=False, verify_integrity=False)
-        return 
+        return df
     
     def add_target(self, df: pd.DataFrame):
         df["Open-Close"] = df["open"] - df["close"]
         df["High-Low"] = df["high"] - df["low"]
-        df["Val_Norm"] = df[["vol"]].apply(max_min_scaler)
-        df["Amount_Norm"] = df[["amount"]].apply(max_min_scaler)
+        # df["Val_Norm"] = df[["vol"]].apply(max_min_scaler)
+        # df["Amount_Norm"] = df[["amount"]].apply(max_min_scaler)
         df["target_cls"] = np.where(df["close"].shift(-1) > df["close"], 1, -1)
         df["target_reg"] = df["close"].shift(-1) - df["close"]
         df.fillna(0, inplace=True)
@@ -142,7 +142,6 @@ class DataLoader:
         # 计算42日EMA
         df["ema42"] = talib.EMA(slope21, timeperiod=42)
         df["buy_signal"] = np.where(df["ema_2"] >= df["ema42"], 1, 0)
-        print( df["buy_signal"])
         df["sell_signal"] = np.where(df["ema_2"] < df["ema42"], 1, 0)
         df.fillna(0, inplace=True)
     

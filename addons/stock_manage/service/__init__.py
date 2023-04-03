@@ -1,1 +1,1 @@
-from .data_load import DataLoader, Stocks
+from .data_load import StockDataLoader, Stocks

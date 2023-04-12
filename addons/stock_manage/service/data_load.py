@@ -39,8 +39,8 @@ class StockDataLoader:
                         StockDaily.pre_close, 
                         StockDaily.pct_chg,
                         StockDaily.change,
-                        StockDaily.vol / 1000000, 
-                        StockDaily.amount / 10000000).
+                        StockDaily.vol, 
+                        StockDaily.amount).
                where((StockDaily.ts_code == self.stock_code) & 
                      (StockDaily.trade_date.between(self.start_date, self.end_date))).
                      order_by(StockDaily.trade_date))
@@ -70,24 +70,24 @@ class StockDataLoader:
         res = (StockDailyMoneyFlow.select(
                         StockDailyMoneyFlow.ts_code,
                         StockDailyMoneyFlow.trade_date,
-                        StockDailyMoneyFlow.buy_sm_vol  / 10000000,
-                        StockDailyMoneyFlow.buy_sm_amount  / 10000000,
-                        StockDailyMoneyFlow.sell_sm_vol / 10000000,
-                        StockDailyMoneyFlow.sell_sm_amount / 10000000,
-                        StockDailyMoneyFlow.buy_md_vol / 10000000,
-                        StockDailyMoneyFlow.buy_md_amount / 10000000,
-                        StockDailyMoneyFlow.sell_md_vol / 10000000,
-                        StockDailyMoneyFlow.sell_md_amount / 10000000,
-                        StockDailyMoneyFlow.buy_lg_vol / 10000000,
-                        StockDailyMoneyFlow.buy_lg_amount / 10000000,
-                        StockDailyMoneyFlow.sell_lg_vol / 10000000,
-                        StockDailyMoneyFlow.sell_lg_amount / 10000000,
-                        StockDailyMoneyFlow.buy_elg_vol / 10000000,
-                        StockDailyMoneyFlow.buy_elg_amount / 10000000,
-                        StockDailyMoneyFlow.sell_elg_vol / 10000000,
-                        StockDailyMoneyFlow.sell_elg_amount / 10000000,
-                        StockDailyMoneyFlow.net_mf_vol / 10000000,
-                        StockDailyMoneyFlow.net_mf_amount / 10000000,
+                        StockDailyMoneyFlow.buy_sm_vol,
+                        StockDailyMoneyFlow.buy_sm_amount,
+                        StockDailyMoneyFlow.sell_sm_vol,
+                        StockDailyMoneyFlow.sell_sm_amount,
+                        StockDailyMoneyFlow.buy_md_vol,
+                        StockDailyMoneyFlow.buy_md_amount,
+                        StockDailyMoneyFlow.sell_md_vol,
+                        StockDailyMoneyFlow.sell_md_amount,
+                        StockDailyMoneyFlow.buy_lg_vol,
+                        StockDailyMoneyFlow.buy_lg_amount,
+                        StockDailyMoneyFlow.sell_lg_vol,
+                        StockDailyMoneyFlow.sell_lg_amount,
+                        StockDailyMoneyFlow.buy_elg_vol,
+                        StockDailyMoneyFlow.buy_elg_amount,
+                        StockDailyMoneyFlow.sell_elg_vol,
+                        StockDailyMoneyFlow.sell_elg_amount,
+                        StockDailyMoneyFlow.net_mf_vol,
+                        StockDailyMoneyFlow.net_mf_amount,
         ).
                where((StockDailyMoneyFlow.ts_code == self.stock_code) & 
                      (StockDailyMoneyFlow.trade_date.between(self.start_date, self.end_date))).order_by(StockDailyMoneyFlow.trade_date))
@@ -144,4 +144,30 @@ class StockDataLoader:
         df["buy_signal"] = np.where(df["ema_2"] >= df["ema42"], 1, 0)
         df["sell_signal"] = np.where(df["ema_2"] < df["ema42"], 1, 0)
         df.fillna(0, inplace=True)
-    
+
+    def add_leave_top(self, df):
+        low = df['low']
+        high = df['high']
+        close = df['close']
+        low10 = low.rolling(window=10).min()
+        high25 = high.rolling(window=25).max()
+        dynamic_line = pd.Series((close-low10)/(high25-low10)*4).ewm(span=4).mean()
+        df['dynamic_line'] = dynamic_line
+        df["buy_signalv1"] = np.where(dynamic_line >= dynamic_line.shift(1), 1, 0) 
+        df["sell_signalv1"] = np.where(dynamic_line < dynamic_line.shift(1), 1, 0) 
+        df.fillna(0, inplace=True)
+
+    def add_buy_point(self, df):
+        VAR2 = 8
+        close = df['close']
+        high = df['high']
+        low = df['low']
+        llv = talib.MIN(low, timeperiod=5)
+        hhv = talib.MAX(high, timeperiod=5)
+        var1 = 4 * talib.SMA((close - llv) / (hhv - llv) * 100, 5) - 3 * talib.SMA(talib.SMA((close - llv) / (hhv - llv) * 100, 5), 3.2)
+        varo5 = low.rolling(window=27).min()
+        varo6 = high.rolling(window=34).max()
+        varo7 = talib.EMA((close - varo5) / (varo6 - varo5) * 4, 4) * 25
+        df['buy_signal'] = np.where(var1 > VAR2, 1, 0)
+        df['build_area_signal'] = np.where(varo7 < 10, 1, 0)
+        df.fillna(0, inplace=True)

@@ -102,3 +102,31 @@ class StockDailyMoneyFlow(BaseModel):
     net_mf_amount = FloatField(default=0.000000)
 
 
+class StockDailyBS(BaseModel):
+    class Meta:
+        table_name = "stock_daily_bs"
+    id = AutoField()
+    ts_code = CharField()
+    trade_date = DateField()
+    buy_signal = IntegerField(default=0)
+    sell_signal = IntegerField(default=0)
+
+
+class StockDailyLeaveBS(BaseModel):
+    class Meta:
+        table_name = "stock_daily_leave_bs"
+    id = AutoField()
+    ts_code = CharField()
+    trade_date = DateField()
+    buy_signal = IntegerField(default=0)
+    sell_signal = IntegerField(default=0)
+    dynamic_line = FloatField(default=0.000000, help_text="0.2底部 0.5买入 3.2阶段卖出 3.5清仓卖出")
+
+class StockDailyBuyPoint(BaseModel):
+    class Meta:
+        table_name = "stock_daily_buy_point"
+    id = AutoField()
+    ts_code = CharField()
+    trade_date = DateField()
+    buy_signal = IntegerField(default=0)
+    build_area_signal = IntegerField(default=0)

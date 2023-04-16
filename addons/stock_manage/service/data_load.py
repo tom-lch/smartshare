@@ -19,6 +19,9 @@ class Stocks():
     
     def get_stocks(self):
         return [raw.ts_code for raw in self.raws]
+    
+    def get_stock_name_codes(self):
+        return [(raw.name, raw.ts_code) for raw in self.raws]
 
 
 # 加载数据模块
@@ -153,8 +156,8 @@ class StockDataLoader:
         high25 = high.rolling(window=25).max()
         dynamic_line = pd.Series((close-low10)/(high25-low10)*4).ewm(span=4).mean()
         df['dynamic_line'] = dynamic_line
-        df["buy_signalv1"] = np.where(dynamic_line >= dynamic_line.shift(1), 1, 0) 
-        df["sell_signalv1"] = np.where(dynamic_line < dynamic_line.shift(1), 1, 0) 
+        df["buy_signal"] = np.where(dynamic_line >= dynamic_line.shift(1), 1, 0) 
+        df["sell_signal"] = np.where(dynamic_line < dynamic_line.shift(1), 1, 0) 
         df.fillna(0, inplace=True)
 
     def add_buy_point(self, df):

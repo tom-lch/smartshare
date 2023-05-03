@@ -1,1 +1,1 @@
-from .stock_manage import StocksBase, StockDaily, StockDailyBasic, StockDailyMoneyFlow
+from .stock_manage import StocksBase, StockDaily, StockDailyBasic, StockDailyMoneyFlow, StockLong

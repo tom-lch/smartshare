@@ -130,3 +130,13 @@ class StockDailyBuyPoint(BaseModel):
     trade_date = DateField()
     buy_signal = IntegerField(default=0)
     build_area_signal = IntegerField(default=0)
+    
+class StockLong(BaseModel):
+    class Meta:
+        table_name = "stock_long"
+    id = AutoField()
+    ts_code = CharField()
+    trade_date = DateField()
+    name = CharField()
+    long_type = IntegerField(default=0)
+     

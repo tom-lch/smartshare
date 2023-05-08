@@ -139,4 +139,9 @@ class StockLong(BaseModel):
     trade_date = DateField()
     name = CharField()
     long_type = IntegerField(default=0)
-     
+    start_price = FloatField()
+    max_up = FloatField()
+    min_low = FloatField()
+    max_price = FloatField()
+    min_price = FloatField()
+    
